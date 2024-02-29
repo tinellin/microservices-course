@@ -1,4 +1,4 @@
-package com.microservices.course.main.dto;
+package com.microservices.course.store.car.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

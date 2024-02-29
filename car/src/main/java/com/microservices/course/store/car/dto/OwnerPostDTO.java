@@ -1,6 +1,7 @@
-package com.microservices.course.main.dto;
+package com.microservices.course.store.car.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.microservices.course.store.car.entity.OwnerPostEntity.OwnerType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,11 +17,6 @@ public class OwnerPostDTO {
     private String name;
 
     private OwnerType type;
-
-    public enum OwnerType {
-        PARTICULAR,
-        PROFESSIONAL
-    }
 
     private String contactNumber;
 }
