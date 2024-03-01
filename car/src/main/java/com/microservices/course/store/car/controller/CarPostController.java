@@ -27,7 +27,7 @@ public class CarPostController {
     }
 
     @DeleteMapping("/car/{id}")
-    public void changeCarSale(@PathVariable Long id) {
+    public void deleteCarSale(@PathVariable Long id) {
         carPostService.deleteCarForSale(id);
     }
 }

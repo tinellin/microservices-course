@@ -28,9 +28,14 @@ public class KafkaConsumerConfig {
 
         Map<String, Object> props = new HashMap<>();
 
+        /* Devemos informar onde o Kafka está rodando */
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+
+        /* Definimos o grupo de consumidores desse microsserviço */
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "store-posts-group");
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+
+        /* Devemos realizar a deserealização do cjto. chave-valor */
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
 
