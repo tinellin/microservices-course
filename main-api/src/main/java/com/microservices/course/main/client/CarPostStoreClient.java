@@ -15,8 +15,8 @@ import java.util.Objects;
 @Component
 public class CarPostStoreClient {
 
-    private final String USER_STORE_SERVICE_URI = "http://localhost:8080/user";
-    private final String POSTS_STORE_SERVICE_URI = "http://localhost:8080/sales";
+    private final String USER_STORE_SERVICE_URI = "http://car-api:8086/user";
+    private final String POSTS_STORE_SERVICE_URI = "http://car-api:8086/sales";
 
     @Autowired
     private RestTemplate restTemplate;

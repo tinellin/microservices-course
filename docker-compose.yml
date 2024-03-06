@@ -1,0 +1,137 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=car_post_storage
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - compose-bridge
+    container_name: postgres
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "2181:2181"
+    volumes:
+      - "zookeeper_data:/bitnami"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - compose-bridge
+    container_name: zookeeper
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    restart: on-failure
+    ports:
+      - "29092:29092"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    volumes:
+      - "kafka_data:/bitnami"
+    depends_on:
+      zookeeper:
+        condition: service_started
+    networks:
+      - compose-bridge
+    container_name: kafka
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      zookeeper:
+        condition: service_started
+      kafka:
+        condition: service_started
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=car-post-portal
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+    networks:
+      - compose-bridge
+    container_name: kafka-ui
+
+  main-api:
+    build:
+      context: "./main-api"
+      dockerfile: "Dockerfile"
+    restart: always
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_KAFKA_BOOTSTRAPSERVERS=kafka:29092
+    depends_on:
+      zookeeper:
+        condition: service_started
+      kafka:
+        condition: service_started
+    networks:
+      - compose-bridge
+    container_name: main-api
+
+  car-api:
+    build:
+      context: "./car"
+      dockerfile: "Dockerfile"
+    restart: always
+    networks:
+      - compose-bridge
+    ports:
+      - "8086:8086"
+    environment:
+      - SPRING_KAFKA_BOOTSTRAPSERVERS=kafka:29092
+    depends_on:
+      postgres:
+        condition: service_started
+      zookeeper:
+        condition: service_started
+      kafka:
+        condition: service_started
+    container_name: car-api
+
+  data-api:
+    build:
+      context: "./car"
+      dockerfile: "Dockerfile"
+    ports:
+      - "8087:8087"
+    environment:
+      - SPRING_KAFKA_BOOTSTRAPSERVERS=kafka:29092
+    networks:
+      - compose-bridge
+    depends_on:
+      postgres:
+        condition: service_started
+      zookeeper:
+        condition: service_started
+      kafka:
+        condition: service_started
+    container_name: data-api
+
+volumes:
+  pgdata:
+    driver: local
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+
+networks:
+  compose-bridge:
+    driver: bridge
